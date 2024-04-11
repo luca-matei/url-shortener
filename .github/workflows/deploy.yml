@@ -1,0 +1,45 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Copy files to the server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.PORT }}
+        source: "."
+        target: "/home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}-temp"
+
+    - name: Setup and Run Website
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          rm -rf /home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}
+          mv /home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}-temp /home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}
+          
+          cd /home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}
+
+          echo "SENDGRID_RECEIVER=${{ secrets.SENDGRID_RECEIVER }}" > .env
+          echo "SENDGRID_SENDER=${{ secrets.SENDGRID_SENDER }}" >> .env
+          echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
+
+          yarn install
+          yarn build
+
+          sudo systemctl restart ${{ secrets.APP_NAME }}
