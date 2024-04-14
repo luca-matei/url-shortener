@@ -20,7 +20,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.PORT }}
         source: "."
-        target: "/home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}-temp"
+        target: "/home/${{ secrets.USERNAME }}/digital_marmot/${{ vars.APP_NAME }}-temp"
 
     - name: Setup and Run Website
       uses: appleboy/ssh-action@v1.0.3
@@ -30,16 +30,12 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.PORT }}
         script: |
-          rm -rf /home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}
-          mv /home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}-temp /home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}
+          rm -rf /home/${{ secrets.USERNAME }}/digital_marmot/${{ vars.APP_NAME }}
+          mv /home/${{ secrets.USERNAME }}/digital_marmot/${{ vars.APP_NAME }}-temp /home/${{ secrets.USERNAME }}/digital_marmot/${{ vars.APP_NAME }}
           
-          cd /home/${{ secrets.USERNAME }}/digital_marmot/${{ secrets.APP_NAME }}
-
-          echo "SENDGRID_RECEIVER=${{ secrets.SENDGRID_RECEIVER }}" > .env
-          echo "SENDGRID_SENDER=${{ secrets.SENDGRID_SENDER }}" >> .env
-          echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
+          cd /home/${{ secrets.USERNAME }}/digital_marmot/${{ vars.APP_NAME }}
 
           yarn install
           yarn build
 
-          sudo systemctl restart ${{ secrets.APP_NAME }}
+          sudo systemctl restart ${{ vars.APP_NAME }}

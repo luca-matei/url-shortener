@@ -60,7 +60,7 @@ class RedisSession:
         return self.connection
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.connection.close()
+        await self.connection.close()
 
 
 if __name__ == "__main__":

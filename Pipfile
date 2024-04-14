@@ -15,6 +15,7 @@ uvicorn = "*"
 dramatiq = "*"
 watchdog = "*"
 black = "*"
+coverage = "*"
 
 [dev-packages]
 
