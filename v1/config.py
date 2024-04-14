@@ -7,9 +7,10 @@ class Settings(BaseSettings):
     redis_user: str = "default"
     redis_password: str = ""
     code_length: int = 8
+    admin_token: str
 
     class Config:
-        env_prefix = ".env"
+        env_file = ".env"
 
 
 settings = Settings()

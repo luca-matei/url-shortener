@@ -1,11 +1,11 @@
-from typing import Optional
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse, JSONResponse
-from pydantic import BaseModel
 
 from v1.clients.redis import RedisSession
 from v1.utils.misc import get_hash, generate_code
 from v1.analytics import process_analytics, reset_analytics
+from v1.schemas import User, NewShort, EditShort
+from v1.autho import get_current_user
 
 router = APIRouter()
 
@@ -22,13 +22,8 @@ async def redirect_url(request: Request, code: str):
         return JSONResponse(content={"error": "URL not found"}, status_code=404)
 
 
-class NewShort(BaseModel):
-    url: str
-    code: Optional[str] = None
-
-
 @router.post("/")
-async def create_code(payload: NewShort):
+async def create_code(payload: NewShort, user: User = Depends(get_current_user)):
     url = payload.url
     code = payload.code
 
@@ -63,12 +58,13 @@ async def create_code(payload: NewShort):
     return JSONResponse(content={"code": code})
 
 
-class EditShort(BaseModel):
-    url: str
-
-
 @router.put("/{code:str}")
-async def update_code(code: str, payload: EditShort, reset: bool = False):
+async def update_code(
+    code: str,
+    payload: EditShort,
+    reset: bool = False,
+    user: User = Depends(get_current_user),
+):
     url = payload.url
 
     async with RedisSession() as cache:
@@ -88,7 +84,7 @@ async def update_code(code: str, payload: EditShort, reset: bool = False):
 
 
 @router.delete("/{code:str}")
-async def delete_code(code: str):
+async def delete_code(code: str, user: User = Depends(get_current_user)):
     async with RedisSession() as cache:
         url = await cache.get(code)
         if not url:
@@ -103,7 +99,7 @@ async def delete_code(code: str):
 
 
 @router.delete("/{code:str}/analytics")
-async def delete_analytics(code: str):
+async def delete_analytics(code: str, user: User = Depends(get_current_user)):
     async with RedisSession() as cache:
         url = await cache.get(code)
         if not url:
