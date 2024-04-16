@@ -34,8 +34,13 @@ jobs:
           mv /home/${{ secrets.USERNAME }}/digital_marmot/${{ vars.APP_NAME }}-temp /home/${{ secrets.USERNAME }}/digital_marmot/${{ vars.APP_NAME }}
           
           cd /home/${{ secrets.USERNAME }}/digital_marmot/${{ vars.APP_NAME }}
+          
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" > .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" > .env
+          echo "REDIS_USER=${{ secrets.REDIS_USER }}" > .env
+          echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" > .env
+          echo "ADMIN_TOKEN=${{ secrets.ADMIN_TOKEN }}" > .env
 
-          yarn install
-          yarn build
+          pipenv install wheel setuptools
 
           sudo systemctl restart ${{ vars.APP_NAME }}
